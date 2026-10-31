@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Un's Online</title>
+  <style>
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      transition: background-color 0.3s;
+    }
+
+    form {
+      max-width: 20rem;
+    }
+
+    label,
+    input,
+    button {
+      display: block;
+      margin-top: 0.75rem;
+    }
+
+    input,
+    button {
+      box-sizing: border-box;
+      padding: 0.6rem;
+      width: 100%;
+    }
+
+    #message {
+      min-height: 1.5em;
+    }
+
+    #show-password-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #show-password {
+      width: auto;
+      margin: 0;
+    }
+
+    #welcome-screen {
+      text-align: center;
+    }
+
+    #welcome-title {
+      font-size: clamp(2rem, 8vw, 4rem);
+      font-weight: 900;
+      background: linear-gradient(
+        90deg,
+        #ff1493,
+        #ff8c00,
+        #32cd32,
+        #1e90ff,
+        #9400d3
+      );
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-stroke: 1px #8a145c;
+    }
+
+    #start-button {
+      max-width: 12rem;
+      margin: 1rem auto 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    #money {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+
+    #player-showname {
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 45vw;
+      overflow-wrap: anywhere;
+      font-size: 1.4rem;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    #main-menu {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      width: min(90vw, 40rem);
+    }
+
+    #main-menu button {
+      display: block;
+      width: auto;
+      min-width: 8rem;
+      margin: 0;
+      padding: 1rem 1.5rem;
+      border: 0;
+      border-radius: 0.75rem;
+      color: white;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #games-button {
+      background-color: #ff4f9a;
+    }
+
+    #shop-button {
+      background-color: #7b61ff;
+    }
+
+    #admins-button {
+      background-color: #00a878;
+    }
+  </style>
+</head>
+<body>
+  <div id="money" hidden>Money ( 0 )</div>
+  <div id="player-showname" hidden></div>
+
+  <form id="login-form">
+    <h1>Log in</h1>
+
+    <label for="username">Username</label>
+    <input id="username" name="username" autocomplete="username" required>
+
+    <label for="password">Password</label>
+    <input
+      id="password"
+      name="password"
+      type="password"
+      autocomplete="current-password"
+      required
+    >
+
+    <label id="show-password-label" for="show-password">
+      <input id="show-password" type="checkbox">
+      Show password
+    </label>
+
+    <button type="submit">Log in</button>
+    <p id="message" role="status" aria-live="polite"></p>
+  </form>
+
+  <form id="showname-form" hidden>
+    <h1>Welcome!</h1>
+
+    <label for="showname">Enter your show name</label>
+    <input id="showname" name="showname" required>
+
+    <button type="submit">Continue</button>
+  </form>
+
+  <main id="welcome-screen" hidden>
+    <h1 id="welcome-title">Welcome to Un's Online</h1>
+    <button id="start-button" type="button">Start</button>
+  </main>
+
+  <nav id="main-menu" aria-label="Main menu" hidden>
+    <button id="games-button" type="button">Games</button>
+    <button id="shop-button" type="button">Shop</button>
+    <button id="admins-button" type="button">Admins</button>
+  </nav>
+
+  <script>
+    // Demo accounts only. Anyone can view these in the HTML file.
+    const approvedUsers = [
+       { username: "Michelle_Balogun", password: "The_Mich_0" },
+      { username: "Ranye_Ran1", password: "Ran_Sis.0" },
+      { username: "Zoey_Nwokolo", password: "The_Zoeey9" },
+      { username: "Uzo_Maka", password: "Uzo_Maker" },
+      { username: "Zeerah_Kambis", password: "Zee.rah" },
+      { username: "Fire_Girl", password: "Rodeo661" },
+      { username: "Imisi_Baba", password: "Babz" }
+
+    ];
+
+    const loginForm = document.getElementById("login-form");
+    const shownameForm = document.getElementById("showname-form");
+    const welcomeScreen = document.getElementById("welcome-screen");
+    const loginMessage = document.getElementById("message");
+    const passwordInput = document.getElementById("password");
+    const showPasswordCheckbox = document.getElementById("show-password");
+    const moneyDisplay = document.getElementById("money");
+    const playerShowname = document.getElementById("player-showname");
+    const welcomeTitle = document.getElementById("welcome-title");
+    const startButton = document.getElementById("start-button");
+    const mainMenu = document.getElementById("main-menu");
+
+    let chosenShowname = "";
+
+    showPasswordCheckbox.addEventListener("change", function () {
+      passwordInput.type = showPasswordCheckbox.checked ? "text" : "password";
+    });
+
+    loginForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const username = document.getElementById("username").value.trim();
+      const password = passwordInput.value;
+
+      const isApproved = approvedUsers.some(function (user) {
+        return user.username === username && user.password === password;
+      });
+
+      if (isApproved) {
+        loginForm.hidden = true;
+        shownameForm.hidden = false;
+        document.body.style.backgroundColor = "#d9f7d9";
+        document.getElementById("showname").focus();
+      } else {
+        loginMessage.textContent = "Username or password is incorrect.";
+      }
+    });
+
+    shownameForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      chosenShowname = document.getElementById("showname").value.trim();
+
+      if (!chosenShowname) {
+        return;
+      }
+
+      shownameForm.hidden = true;
+      welcomeScreen.hidden = false;
+      document.body.style.backgroundColor = "#ffb6c1";
+    });
+
+    startButton.addEventListener("click", function () {
+      document.body.style.backgroundColor = "#89CFF0";
+      welcomeTitle.hidden = true;
+      startButton.hidden = true;
+
+      moneyDisplay.hidden = false;
+      playerShowname.textContent = chosenShowname;
+      playerShowname.hidden = false;
+      mainMenu.hidden = false;
+    });
+  </script>
+</body>
+</html>
+
+
+
